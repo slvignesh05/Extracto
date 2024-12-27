@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Extracto</title>
-  <title>by S.Lakshmi Vignesh</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -65,28 +64,23 @@
       padding: 15px;
     }
 
-    .result-item {
+    .results div {
       display: flex;
-      flex-direction: column;
-      gap: 5px;
+      justify-content: space-between;
       padding: 10px 0;
       border-bottom: 1px solid #ccc;
     }
 
-    .result-item:last-child {
+    .results div:last-child {
       border-bottom: none;
     }
 
-    .result-item span {
-      font-weight: bold;
-    }
-
-    .result-item a {
+    .results div a {
       color: #007bff;
       text-decoration: none;
     }
 
-    .result-item a:hover {
+    .results div a:hover {
       text-decoration: underline;
     }
   </style>
@@ -94,17 +88,16 @@
 <body>
   <h1>Extracto</h1>
   <form id="orgForm">
-    <input type="text" id="orgName" placeholder="Enter organization name" required>
-    <button type="submit">Fetch Something</button>
+    <input type="text" id="orgName" placeholder="Enter GitHub organization name" required>
+    <button type="submit">Fetch Domains</button>
   </form>
-  <div id="resultContainer" class="results" style="display: none;"></div>
+  <div id="resultContainer" class="results"></div>
 
   <script>
     document.getElementById("orgForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const orgName = document.getElementById("orgName").value;
       const resultContainer = document.getElementById("resultContainer");
-      resultContainer.style.display = "none"; // Hide results initially
       resultContainer.innerHTML = "Loading...";
 
       try {
@@ -115,22 +108,19 @@
         });
 
         const data = await response.json();
-        if (response.ok && data.length > 0) {
+        if (response.ok) {
           resultContainer.innerHTML = data.map(
             (item) =>
-              `<div class="result-item">
-                 <span>${item.domain}</span>
+              `<div>
+                 <span>${item.domain}</span> | 
                  <a href="${item.repo_url}" target="_blank">${item.repo_url}</a>
                </div>`
           ).join("");
-          resultContainer.style.display = "block"; // Show results
         } else {
-          alert("Error fetching domains."); // Alert if no domains
-          resultContainer.style.display = "none"; // Hide results if error
+          resultContainer.innerHTML = `<div>Error: ${data.error || "Unable to fetch domains"}</div>`;
         }
       } catch (err) {
-        alert("Error fetching domains."); // Alert on fetch error
-        resultContainer.style.display = "none"; // Hide results if error
+        resultContainer.innerHTML = `<div>Error: ${err.message}</div>`;
       }
     });
   </script>
