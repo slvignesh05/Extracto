@@ -40,19 +40,20 @@ def get_repositories(org_name):
 
 def extract_domains(repos):
     """Extract domains from repository 'homepage' and 'description' fields."""
-    domains = set()
+    domains = []
     for repo in repos:
         repo_url = repo.get("html_url", "")
         homepage = repo.get("homepage", "")
         description = repo.get("description", "")
-        
+
         # Extract domains
         for field in [homepage, description]:
             if field:
                 found_domains = re.findall(r"https?://(?:www\.)?([^\s/]+)", field)
                 for domain in found_domains:
-                    domains.add({"domain": domain, "repo_url": repo_url})
-    return list(domains)
+                    # Add as a tuple of (domain, repo_url)
+                    domains.append({"domain": domain, "repo_url": repo_url})
+    return domains
 
 @app.route("/fetch_domains", methods=["POST"])
 def fetch_domains():
