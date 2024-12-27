@@ -64,23 +64,28 @@
       padding: 15px;
     }
 
-    .results div {
+    .result-item {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 5px;
       padding: 10px 0;
       border-bottom: 1px solid #ccc;
     }
 
-    .results div:last-child {
+    .result-item:last-child {
       border-bottom: none;
     }
 
-    .results div a {
+    .result-item span {
+      font-weight: bold;
+    }
+
+    .result-item a {
       color: #007bff;
       text-decoration: none;
     }
 
-    .results div a:hover {
+    .result-item a:hover {
       text-decoration: underline;
     }
   </style>
@@ -91,13 +96,14 @@
     <input type="text" id="orgName" placeholder="Enter GitHub organization name" required>
     <button type="submit">Fetch Domains</button>
   </form>
-  <div id="resultContainer" class="results"></div>
+  <div id="resultContainer" class="results" style="display: none;"></div>
 
   <script>
     document.getElementById("orgForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const orgName = document.getElementById("orgName").value;
       const resultContainer = document.getElementById("resultContainer");
+      resultContainer.style.display = "none"; // Hide results initially
       resultContainer.innerHTML = "Loading...";
 
       try {
@@ -108,19 +114,22 @@
         });
 
         const data = await response.json();
-        if (response.ok) {
+        if (response.ok && data.length > 0) {
           resultContainer.innerHTML = data.map(
             (item) =>
-              `<div>
-                 <span>${item.domain}</span> | 
+              `<div class="result-item">
+                 <span>${item.domain}</span>
                  <a href="${item.repo_url}" target="_blank">${item.repo_url}</a>
                </div>`
           ).join("");
+          resultContainer.style.display = "block"; // Show results
         } else {
-          resultContainer.innerHTML = `<div>Error: ${data.error || "Unable to fetch domains"}</div>`;
+          alert("Error fetching domains."); // Alert if no domains
+          resultContainer.style.display = "none"; // Hide results if error
         }
       } catch (err) {
-        resultContainer.innerHTML = `<div>Error: ${err.message}</div>`;
+        alert("Error fetching domains."); // Alert on fetch error
+        resultContainer.style.display = "none"; // Hide results if error
       }
     });
   </script>
