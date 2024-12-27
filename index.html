@@ -7,110 +7,113 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f8ff; /* Light blue background */
-      color: #333; /* Dark text for readability */
       margin: 0;
       padding: 0;
-    }
-    .container {
+      background-color: #f0f8ff;
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      text-align: center;
+      min-height: 100vh;
     }
+
     h1 {
-      color: #003366; /* Dark blue */
+      color: #1e90ff;
+      font-size: 2.5em;
+      margin-bottom: 10px;
     }
-    input, button {
+
+    form {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="text"] {
       padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
+      width: 300px;
+      border: 1px solid #1e90ff;
       border-radius: 5px;
-      font-size: 16px;
     }
+
     button {
-      background-color: #003366; /* Dark blue */
+      padding: 10px 20px;
+      background-color: #1e90ff;
       color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: 1em;
     }
+
     button:hover {
-      background-color: #00509e; /* Lighter blue */
+      background-color: #4682b4;
     }
-    table {
-      width: 80%;
+
+    .results {
       margin-top: 20px;
-      border-collapse: collapse;
+      width: 80%;
+      max-width: 600px;
     }
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-    th, td {
+
+    .results div {
+      display: flex;
+      justify-content: space-between;
       padding: 10px;
-      text-align: left;
+      border-bottom: 1px solid #ccc;
     }
-    th {
-      background-color: #003366;
-      color: white;
-    }
-    a {
-      color: #00509e;
+
+    .results div a {
+      color: #1e90ff;
       text-decoration: none;
     }
-    a:hover {
+
+    .results div a:hover {
       text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Extracto</h1>
-    <input type="text" id="orgName" placeholder="Enter GitHub Organization" />
-    <button onclick="fetchDomains()">Fetch Domains</button>
-    <table id="results" style="display: none;">
-      <thead>
-        <tr>
-          <th>Domain</th>
-          <th>GitHub URL</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <h1>Extracto</h1>
+  <form id="orgForm">
+    <input type="text" id="orgName" placeholder="Enter GitHub organization name" required>
+    <button type="submit">Fetch Domains</button>
+  </form>
+  <div id="resultContainer" class="results"></div>
+
   <script>
-    async function fetchDomains() {
-      const orgName = document.getElementById('orgName').value;
-      if (!orgName) {
-        alert('Please enter an organization name.');
-        return;
+    document.getElementById("orgForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const orgName = document.getElementById("orgName").value;
+      const resultContainer = document.getElementById("resultContainer");
+      resultContainer.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch("https://extracto.onrender.com/fetch_domains", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ org_name: orgName }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          resultContainer.innerHTML = data.map(
+            (item) =>
+              `<div>
+                 <span>${item.domain}</span> | 
+                 <a href="${item.repo_url}" target="_blank">${item.repo_url} (opens in new tab)</a>
+               </div>`
+          ).join("");
+        } else {
+          resultContainer.innerHTML = `<div>Error: ${data.error || "Unable to fetch domains"}</div>`;
+        }
+      } catch (err) {
+        resultContainer.innerHTML = `<div>Error: ${err.message}</div>`;
       }
-      const response = await fetch('https://extracto.onrender.com/fetch_domains', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_name: orgName })
-      });
-
-      if (!response.ok) {
-        alert('Error fetching domains.');
-        return;
-      }
-
-      const data = await response.json();
-      const table = document.getElementById('results');
-      const tbody = table.querySelector('tbody');
-      tbody.innerHTML = ''; // Clear previous results
-
-      data.forEach(item => {
-        const row = `<tr>
-          <td>${item.domain}</td>
-          <td><a href="${item.repo_url}" target="_blank">${item.repo_url}</a></td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-
-      table.style.display = 'table';
-    }
+    });
   </script>
 </body>
 </html>
