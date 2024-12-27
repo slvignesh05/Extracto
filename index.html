@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extracto</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+        input, button { padding: 10px; margin: 5px; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Extracto</h1>
+    <input id="orgInput" type="text" placeholder="Enter GitHub organization name">
+    <button onclick="fetchDomains()">Fetch Domains</button>
+    <div id="results"></div>
+
+    <script>
+        const API_URL = "https://extracto.onrender.com/fetch_domains"; // Replace with your Vercel backend URL
+
+        async function fetchDomains() {
+            const orgName = document.getElementById("orgInput").value;
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "Fetching...";
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ org_name: orgName })
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultsDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
