@@ -9,8 +9,8 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f0f8ff;
-      color: #333;
+      background-color: white; /* Changed background to white */
+      color: #001f3f; /* Dark blue text */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -19,7 +19,7 @@
     }
 
     h1 {
-      color: #1e90ff;
+      color: #007bff; /* Lighter blue for title */
       font-size: 2.5em;
       margin-bottom: 10px;
     }
@@ -35,13 +35,13 @@
     input[type="text"] {
       padding: 10px;
       width: 300px;
-      border: 1px solid #1e90ff;
+      border: 1px solid #007bff;
       border-radius: 5px;
     }
 
     button {
       padding: 10px 20px;
-      background-color: #1e90ff;
+      background-color: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
@@ -50,28 +50,42 @@
     }
 
     button:hover {
-      background-color: #4682b4;
+      background-color: #0056b3;
     }
 
     .results {
       margin-top: 20px;
       width: 80%;
       max-width: 600px;
+      border: 1px solid #007bff; /* Blue border for box */
+      border-radius: 8px;
+      background-color: white;
+      color: #001f3f; /* Dark blue text inside box */
+      padding: 15px;
     }
 
-    .results div {
+    .result-item {
       display: flex;
-      justify-content: space-between;
-      padding: 10px;
+      flex-direction: column;
+      gap: 5px;
+      padding: 10px 0;
       border-bottom: 1px solid #ccc;
     }
 
-    .results div a {
-      color: #1e90ff;
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-item span {
+      font-weight: bold;
+    }
+
+    .result-item a {
+      color: #007bff;
       text-decoration: none;
     }
 
-    .results div a:hover {
+    .result-item a:hover {
       text-decoration: underline;
     }
   </style>
@@ -82,13 +96,14 @@
     <input type="text" id="orgName" placeholder="Enter GitHub organization name" required>
     <button type="submit">Fetch Domains</button>
   </form>
-  <div id="resultContainer" class="results"></div>
+  <div id="resultContainer" class="results" style="display: none;"></div>
 
   <script>
     document.getElementById("orgForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const orgName = document.getElementById("orgName").value;
       const resultContainer = document.getElementById("resultContainer");
+      resultContainer.style.display = "none"; // Hide results initially
       resultContainer.innerHTML = "Loading...";
 
       try {
@@ -99,19 +114,22 @@
         });
 
         const data = await response.json();
-        if (response.ok) {
+        if (response.ok && data.length > 0) {
           resultContainer.innerHTML = data.map(
             (item) =>
-              `<div>
-                 <span>${item.domain}</span> | 
-                 <a href="${item.repo_url}" target="_blank">${item.repo_url} (opens in new tab)</a>
+              `<div class="result-item">
+                 <span>${item.domain}</span>
+                 <a href="${item.repo_url}" target="_blank">${item.repo_url}</a>
                </div>`
           ).join("");
+          resultContainer.style.display = "block"; // Show results
         } else {
-          resultContainer.innerHTML = `<div>Error: ${data.error || "Unable to fetch domains"}</div>`;
+          alert("Error fetching domains."); // Alert if no domains
+          resultContainer.style.display = "none"; // Hide results if error
         }
       } catch (err) {
-        resultContainer.innerHTML = `<div>Error: ${err.message}</div>`;
+        alert("Error fetching domains."); // Alert on fetch error
+        resultContainer.style.display = "none"; // Hide results if error
       }
     });
   </script>
