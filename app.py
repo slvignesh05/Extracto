@@ -39,8 +39,8 @@ def get_repositories(org_name):
     return repos, None
 
 def extract_domains(repos):
-    """Extract domains from repository 'homepage' and 'description' fields."""
-    domains = []
+    """Extract unique domains from repository 'homepage' and 'description' fields."""
+    unique_domains = {}
     for repo in repos:
         repo_url = repo.get("html_url", "")
         homepage = repo.get("homepage", "")
@@ -51,9 +51,13 @@ def extract_domains(repos):
             if field:
                 found_domains = re.findall(r"https?://(?:www\.)?([^\s/]+)", field)
                 for domain in found_domains:
-                    # Add as a tuple of (domain, repo_url)
-                    domains.append({"domain": domain, "repo_url": repo_url})
-    return domains
+                    # Add only the first occurrence of each domain
+                    if domain not in unique_domains:
+                        unique_domains[domain] = repo_url
+
+    # Convert the dictionary to a list of domain-repo mappings
+    return [{"domain": domain, "repo_url": repo_url} for domain, repo_url in unique_domains.items()]
+
 
 @app.route("/fetch_domains", methods=["POST"])
 def fetch_domains():
